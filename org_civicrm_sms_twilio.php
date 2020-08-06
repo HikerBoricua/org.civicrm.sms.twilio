@@ -189,21 +189,27 @@ class org_civicrm_sms_twilio extends CRM_SMS_Provider {
   function inbound() {
     $fromPhone = $this->retrieve('From', 'String'); #Matching or new contact becomes target of activity, and potentially source too
     $toPhone = $this->retrieve('To', 'String'); #If contact matches becomes the Source (Added by) of the Activity
+                                                #TODO Getting an error downstresam if contact doesn't match
     $numMedia = $this->retrieve('NumMedia', 'Positive'); #Valid types in CRM/Utils/Type.php validate()
     $msgSid = $this->retrieve('MessageSid', 'String'); #SmsSid deprecated per https://www.twilio.com/docs/sms/twiml
     $msgBody = $this->retrieve('Body', 'String');
 
     #Append calling phone number to the message body as convenience for users
-    $msgBody .= PHP_EOL . PHP_EOL . "From phone: " . $fromPhone;
+    $msgBody .= PHP_EOL . "<br>From phone: " . $fromPhone;
 
-    #If media in sent message, append URLs as convenince for users
-    if ($numMedia == 1) {
-      $msgBody .= PHP_EOL . "Media: " . $this->retrieve('MediaUrl', 'Link');
-    } elseif ($numMedia > 1) {
+    #If media in message, append URLs as convenince for users
+    if ($numMedia > 0) {
       for ($i=0; $i < $numMedia; $i++) { 
-        $msgBody .= PHP_EOL . "Media: " . $this->retrieve('MediaUrl'.$i, 'Link');
+        $j = $i + 1;
+        $msgBody .= PHP_EOL . "<br>Media ${j}: <a href=\"" . $this->retrieve('MediaUrl'.$i, 'Link');
+        $msgBody .= "\">link</a>";
       }
     }
+
+    ob_start();
+    print("fromPhone {$fromPhone}; toPhone {$toPhone}; numMedia {$numMedia}; msgSid {$msgSid}; msgBody:");
+    print($msgBody);
+    Civi::log()->debug(ob_get_clean());
 
     return parent::processInbound($fromPhone, $msgBody, $toPhone, $msgSid);
   }
