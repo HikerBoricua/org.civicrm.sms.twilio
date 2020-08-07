@@ -205,12 +205,6 @@ class org_civicrm_sms_twilio extends CRM_SMS_Provider {
         $msgBody .= "\">link</a>";
       }
     }
-
-    ob_start();
-    print("fromPhone {$fromPhone}; toPhone {$toPhone}; numMedia {$numMedia}; msgSid {$msgSid}; msgBody:");
-    print($msgBody);
-    Civi::log()->debug(ob_get_clean());
-
     return parent::processInbound($fromPhone, $msgBody, $toPhone, $msgSid);
   }
 }
